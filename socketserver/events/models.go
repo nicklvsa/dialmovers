@@ -28,6 +28,7 @@ type GameJoinPayload struct {
 }
 
 type GameMovePayload struct {
+	UserID *string `json:"user_id"`
 	GameID    *string `json:"game_id"`
 	Direction *string `json:"direction"`
 }

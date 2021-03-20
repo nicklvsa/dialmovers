@@ -53,8 +53,8 @@ func (s *SocketCore) EmitToGame(gameID string, current *SocketClient, payload *S
 	}
 
 	for client, active := range s.Clients {
-		if active && current.User.UserID != client.User.UserID {
-			if client.User.CurrentGameID != nil && *client.User.CurrentGameID == gameID {
+		if active {
+			if client.User.CurrentGameID != nil && *client.User.CurrentGameID == gameID && client.User.UserID != current.User.UserID {
 				client.Data <- *payload
 			}
 		}
@@ -69,7 +69,7 @@ func (s *SocketCore) BroadcastAll(current *SocketClient, payload *SocketEvent) e
 	}
 
 	for client, active := range s.Clients {
-		if active && current.User.UserID != client.User.UserID {
+		if active {
 			client.Data <- *payload
 		}
 	}
@@ -104,6 +104,12 @@ func (s *SocketCore) HandleDestroyUser(client *SocketClient) {
 		if err := s.HandleEvent(client, &event); err != nil {
 			fmt.Println(fmt.Sprintf("[ERR] - %s", err.Error()))
 		}
+
+		if err := s.DestroyClient(client); err != nil {
+			fmt.Println(fmt.Sprintf("[ERR] - %s", err.Error()))
+		}
+
+		delete(s.Clients, client)
 	}
 }
 
@@ -117,10 +123,6 @@ func (s *SocketCore) HandleEvent(client *SocketClient, payload *SocketEvent) err
 		return nil
 	case SocketEventTypeDisconnect:
 		if err := s.BroadcastAll(client, payload); err != nil {
-			return err
-		}
-
-		if err := s.DestroyClient(client); err != nil {
 			return err
 		}
 
@@ -157,6 +159,31 @@ func (s *SocketCore) HandleEvent(client *SocketClient, payload *SocketEvent) err
 	case SocketEventTypeMove:
 		var move GameMovePayload
 		if err := UnmarshalInterface(payload.Payload, &move); err != nil {
+			return err
+		}
+
+		if move.Direction == nil {
+			return fmt.Errorf("unable to move in a nil direction")
+		}
+
+		if move.UserID == nil {
+			move.UserID = &client.User.UserID
+		}
+
+		if move.GameID == nil {
+			move.GameID = client.User.CurrentGameID
+		}
+
+		updatedPayload := SocketEvent{
+			Type: payload.Type,
+			Payload: GameMovePayload{
+				UserID: move.UserID,
+				GameID: move.GameID,
+				Direction: move.Direction,
+			},
+		}
+
+		if err := s.EmitToGame(*move.GameID, client, &updatedPayload); err != nil {
 			return err
 		}
 
@@ -239,7 +266,6 @@ func (s *SocketCore) RegisterReader(client *SocketClient) {
 		var event SocketEvent
 		if err := json.Unmarshal(payload, &event); err != nil {
 			fmt.Println(fmt.Sprintf("[ERR] - %s", err.Error()))
-			break
 		}
 
 		if s.HandleEvent(client, &event); err != nil {

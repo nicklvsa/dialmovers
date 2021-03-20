@@ -2,7 +2,7 @@ const http = require('http');
 const express = require('express');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
-const { handleEvents, mappedUsers, joinGame } = require('./socket');
+const { handleEvents, mappedUsers, joinGame, movePlayer } = require('./socket');
 
 const port = 8080;
 const app = express();
@@ -23,7 +23,7 @@ app.get('/message', (req, res) => {
 app.get('/voice', async (req, res) => {
     const twiml = new VoiceResponse();
 
-    const userID = `${req.query['Caller']}:${req.query['CallerZip']}`.toLowerCase();
+    const userID = `${req.query['Caller']}:caller`.toLowerCase();
 
     let recaller = false;
     let enteredGamePin = false;
@@ -45,6 +45,7 @@ app.get('/voice', async (req, res) => {
                     if (mappedUsers[userID]) {
                         if (mappedUsers[userID].connection) {
                             mappedUsers[userID].connection.close();
+                            mappedUsers[userID].connection = null;
                         }
 
                         delete mappedUsers[userID];
@@ -83,6 +84,8 @@ app.get('/voice', async (req, res) => {
             }
     
             if (!hangup) {
+                movePlayer(userID, direction);
+
                 twiml.say(`
                     Moving ${direction}
                 `);
@@ -99,11 +102,14 @@ app.get('/voice', async (req, res) => {
             mappedUsers[userID].pin = digits;
             enteredGamePin = true;
 
-            handleEvents(userID, (socket) => {
-                console.log('called back');
-                mappedUsers[userID].connection = socket;
-                joinGame(socket, userID);
-            });
+            if (!mappedUsers[userID].connection) {
+                handleEvents(userID, (socket) => {
+                    mappedUsers[userID].connection = socket;
+                    joinGame(socket, userID);
+                });
+            } else {
+                joinGame(mappedUsers[userID].connection, userID);
+            }
         }
     } else {
         twiml.say(`

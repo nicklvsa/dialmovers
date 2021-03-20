@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 
-// userID:{conneted: boolean, pin: number}
+// userID:{connection: WebSocket(), pin: number}
 const mappedUsers = {};
 
 const connect = (userID) => {
@@ -32,6 +32,20 @@ const joinGame = (socket, userID) => {
     }));
 };
 
+const movePlayer = (userID, direction) => {
+    const gamePin = mappedUsers[userID].pin;
+    const socket = mappedUsers[userID].connection;
+
+    socket.send(JSON.stringify({
+        'payload_type': 'game:move',
+        'payload': {
+            'user_id': userID,
+            'game_id': gamePin,
+            'direction': direction,
+        },
+    }));
+};
+
 module.exports = {
-    handleEvents, joinGame, mappedUsers,
+    handleEvents, joinGame, movePlayer, mappedUsers,
 };
