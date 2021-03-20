@@ -30,7 +30,7 @@ export default {
       // {userID: '', x: 0, y: 0}
       positions: [],
       phoneField: false,
-      gameSpeed: 10,
+      gameSpeed: 20,
       connectionTitle: 'Connect!',
     };
   },
