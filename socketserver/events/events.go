@@ -19,16 +19,16 @@ func (s *SocketCore) Run() {
 	}
 }
 
-func (c *SocketClient) Destroy() error {
-	if c.Data != nil {
-		close(c.Data)
+func (s *SocketCore) DestroyClient(client *SocketClient) error {
+	if client.Data != nil {
+		close(client.Data)
 	}
 
-	if err := c.Connection.Close(); err != nil {
+	if err := client.Connection.Close(); err != nil {
 		return err
 	}
 
-	delete(c.Core.Clients, c)
+	delete(s.Clients, client)
 
 	return nil
 }
@@ -120,7 +120,7 @@ func (s *SocketCore) HandleEvent(client *SocketClient, payload *SocketEvent) err
 			return err
 		}
 
-		if err := client.Destroy(); err != nil {
+		if err := s.DestroyClient(client); err != nil {
 			return err
 		}
 

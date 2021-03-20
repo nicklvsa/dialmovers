@@ -102,7 +102,7 @@ app.get('/voice', async (req, res) => {
             handleEvents(userID, (socket) => {
                 console.log('called back');
                 mappedUsers[userID].connection = socket;
-                joinGame(userID);
+                joinGame(socket, userID);
             });
         }
     } else {

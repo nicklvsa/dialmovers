@@ -20,8 +20,7 @@ const handleEvents = (userID, cb) => {
     });
 }
 
-const joinGame = (userID) => {
-    const socket = mappedUsers[userID].connection;
+const joinGame = (socket, userID) => {
     const gamePin = mappedUsers[userID].pin;
 
     socket.send(JSON.stringify({
