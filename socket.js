@@ -1,20 +1,18 @@
 const WebSocket = require('ws');
 
+// userID:{conneted: boolean, pin: number}
 const mappedUsers = {};
 
-const connect = () => {
-    const url = 'ws://localhost:8081/ws';
+const connect = (userID) => {
+    const url = `ws://localhost:8081/ws/${userID}`;
     return new WebSocket(url);
 };
 
-const handleEvents = () => {
-    const socket = connect();
+const handleEvents = (userID, cb) => {
+    const socket = connect(userID);
 
     socket.on('open', () => {
-        socket.send(JSON.stringify({
-            'type': 'define_users',
-            'users': mappedUsers,
-        }));
+        cb(socket);
     });
 
     socket.on('message', (message) => {
@@ -22,6 +20,19 @@ const handleEvents = () => {
     });
 }
 
+const joinGame = (userID) => {
+    const socket = mappedUsers[userID].connection;
+    const gamePin = mappedUsers[userID].pin;
+
+    socket.send(JSON.stringify({
+        'payload_type': 'game:join',
+        'payload': {
+            'user_id': userID,
+            'game_id': gamePin,
+        },
+    }));
+};
+
 module.exports = {
-    handleEvents, mappedUsers,
+    handleEvents, joinGame, mappedUsers,
 };

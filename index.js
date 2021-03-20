@@ -2,13 +2,10 @@ const http = require('http');
 const express = require('express');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
-const { handleEvents, mappedUsers } = require('./socket');
+const { handleEvents, mappedUsers, joinGame } = require('./socket');
 
 const port = 8080;
 const app = express();
-
-// TODO: uncomment for connection to websocket server
-// handleEvents();
 
 app.get('/message', (req, res) => {
     const twiml = new MessagingResponse();
@@ -33,7 +30,7 @@ app.get('/voice', async (req, res) => {
     let firstPass = true;
     let hangup = false;
 
-    if (mappedUsers[userID] && mappedUsers[userID] !== null) {
+    if (mappedUsers[userID] && mappedUsers[userID].pin && mappedUsers[userID].pin !== null) {
         enteredGamePin = true;
         recaller = true;
     }
@@ -46,6 +43,10 @@ app.get('/voice', async (req, res) => {
             if (!digits || digits.length <= 0 || digits.length > 1) {
                 if (digits.includes('*')) {
                     if (mappedUsers[userID]) {
+                        if (mappedUsers[userID].connection) {
+                            mappedUsers[userID].connection.close();
+                        }
+
                         delete mappedUsers[userID];
                     }
 
@@ -87,15 +88,22 @@ app.get('/voice', async (req, res) => {
                 `);
             }
 
-            if (mappedUsers[userID] && mappedUsers[userID] !== null) {
+            if (mappedUsers[userID] && mappedUsers[userID].pin && mappedUsers[userID].pin !== null) {
                 enteredGamePin = true;
             }
 
             firstPass = false;
         } else {
             twiml.say(`Setting your game code to ${digits.toString().split('').join(' ')}.`);
-            mappedUsers[userID] = digits;
+            mappedUsers[userID] = {};
+            mappedUsers[userID].pin = digits;
             enteredGamePin = true;
+
+            handleEvents(userID, (socket) => {
+                console.log('called back');
+                mappedUsers[userID].connection = socket;
+                joinGame(userID);
+            });
         }
     } else {
         twiml.say(`
