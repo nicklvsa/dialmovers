@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="game-container">
     <div class="data-container">
       <h3 v-if="gameID !== ''">Game ID: {{ gameID }}</h3>
       <input :disabled="phoneField" type="text" placeholder="Enter phone number: " v-model="userID" class="userid-field" />
@@ -30,6 +30,7 @@ export default {
       // {userID: '', x: 0, y: 0}
       positions: [],
       phoneField: false,
+      gameSpeed: 10,
       connectionTitle: 'Connect!',
     };
   },
@@ -37,9 +38,12 @@ export default {
     positions: {
       handler(vals) {
         this.context.clearRect(0, 0, this.$refs.game.width, this.$refs.game.height);
-
-        for (const val of vals) {
-          val.updatePos(val.x, val.y);
+        if (!vals || vals.length <= 0) {
+          alert('All players have disconnected!');
+        } else {
+          for (const val of vals) {
+            val.updatePos(val.x, val.y);
+          }
         }
       },
       deep: true,
@@ -72,6 +76,14 @@ export default {
               }
               break;
             case 'disconnect':
+              this.positions.forEach((val, i) => {
+                if (val.user_id === response.payload.user_id) {
+                  this.positions.splice(i, 1);
+                }
+
+                val.updatePos(val.x, val.y);
+              });
+
               break;
             case 'game:join':
               if (this.isCaller(response.payload.user_id)) {
@@ -141,16 +153,16 @@ export default {
                       if (pos.user_id === response.payload.user_id) {
                         switch (direction) {
                           case 'up':
-                            pos.y -=5;
+                            pos.y -= this.gameSpeed;
                             break;
                           case 'down':
-                            pos.y += 5;
+                            pos.y += this.gameSpeed;
                             break;
                           case 'left':
-                            pos.x -= 5;
+                            pos.x -= this.gameSpeed;
                             break;
                           case 'right':
-                            pos.x += 5
+                            pos.x += this.gameSpeed;
                             break;
                         }
                       }
@@ -167,16 +179,16 @@ export default {
                       if (pos.user_id === response.payload.user_id) {
                         switch (direction) {
                           case 'up':
-                            pos.y -=5;
+                            pos.y -= this.gameSpeed;
                             break;
                           case 'down':
-                            pos.y += 5;
+                            pos.y += this.gameSpeed;
                             break;
                           case 'left':
-                            pos.x -= 5;
+                            pos.x -= this.gameSpeed;
                             break;
                           case 'right':
-                            pos.x += 5
+                            pos.x += this.gameSpeed;
                             break;
                         }
                       }
@@ -216,6 +228,10 @@ export default {
 <style scoped>
   canvas {
     margin-bottom: 20px;
+  }
+
+  .game-container {
+    text-align: center;
   }
 
   .data-container {
