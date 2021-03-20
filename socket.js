@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
-const { mappedUsers } = require('.');
+
+const mappedUsers = {};
 
 const connect = () => {
     const url = 'ws://localhost:8081/ws';
@@ -22,5 +23,5 @@ const handleEvents = () => {
 }
 
 module.exports = {
-    handleEvents,
+    handleEvents, mappedUsers,
 };

@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "instrun": "npm i && node index.js",
-    "run": "node index.js"
+    "inststart": "npm i && node index.js",
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",

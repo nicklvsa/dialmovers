@@ -2,12 +2,10 @@ const http = require('http');
 const express = require('express');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
-const { handleEvents } = require('./socket');
+const { handleEvents, mappedUsers } = require('./socket');
 
 const port = 8080;
 const app = express();
-
-const mappedUsers = {}
 
 // TODO: uncomment for connection to websocket server
 // handleEvents();
@@ -150,7 +148,3 @@ app.get('/check', (req, res) => {
 http.createServer(app).listen(port, () => {
     console.log(`Waiting for incoming messages on port ${port}...`);
 });
-
-module.exports = {
-    mappedUsers,
-};
