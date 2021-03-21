@@ -56,7 +56,7 @@ export default {
         this.phoneField = false;
         this.socket.close();
       } else {
-        const url = `ws://localhost:8081/ws/${this.formatUserID()}`;
+        const url = `${process.env.VUE_APP_WS_URL}/${this.formatUserID()}`;
         this.connectionTitle = 'Disconnect!';
         this.socket = new WebSocket(url);
         this.phoneField = true;
