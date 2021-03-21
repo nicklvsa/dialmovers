@@ -2,7 +2,7 @@
   <div class="game-container">
     <div class="data-container">
       <h3 v-if="gameID !== ''">Game ID: {{ gameID }}</h3>
-      <input :disabled="phoneField" type="text" placeholder="Enter phone number: " v-model="userID" />
+      <input :disabled="phoneField" type="number" placeholder="Enter your phone number: " v-model="userID" />
       <button type="button" @click="handleConnection" :disabled="!userID || userID === ''">{{ connectionTitle }}</button>
     </div>
     <canvas 
@@ -52,7 +52,7 @@ export default {
   },
   methods: {
     showHelp() {
-      alert('To connect your phone, dial into this number: +1(484)255-3747.\n\nNOTE: This game is still under development!');
+      alert('To connect your phone, dial into this number: +1(484)255-3747.\nWhen entering your phone number into the text box above, do NOT include the "+1,(),-" characters!\n\nNOTE: This game is still under development!');
     },
     handleConnection() {
       if (this.socket.readyState !== WebSocket.CLOSED && this.connectionTitle === 'Disconnect!') {
