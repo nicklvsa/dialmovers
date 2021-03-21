@@ -13,6 +13,7 @@
       v-if="userID !== '' && socket"
     >
     </canvas>  
+    <button type="button" @click="showHelp" class="help-btn">Help / Info</button>
     <h5>Red Square = Enemy</h5>
     <h5>Green Square = You</h5>
   </div>
@@ -50,6 +51,9 @@ export default {
     }
   },
   methods: {
+    showHelp() {
+      alert('To connect your phone, dial into this number: +1(484)255-3747.\n\nNOTE: This game is still under development!');
+    },
     handleConnection() {
       if (this.socket.readyState !== WebSocket.CLOSED && this.connectionTitle === 'Disconnect!') {
         this.connectionTitle = 'Connect!';
@@ -242,7 +246,7 @@ export default {
     border: 1px solid black;
   }
 
-  .userid-field {
-    margin-right: 10px;
+  .help-btn {
+    font-size: 12px;
   }
 </style>
