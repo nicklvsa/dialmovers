@@ -2,7 +2,7 @@
   <div class="game-container">
     <div class="data-container">
       <h3 v-if="gameID !== ''">Game ID: {{ gameID }}</h3>
-      <input :disabled="phoneField" type="text" placeholder="Enter phone number: " v-model="userID" class="userid-field" />
+      <input :disabled="phoneField" type="text" placeholder="Enter phone number: " v-model="userID" />
       <button type="button" @click="handleConnection" :disabled="!userID || userID === ''">{{ connectionTitle }}</button>
     </div>
     <canvas 
