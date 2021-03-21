@@ -2,7 +2,7 @@
   <div class="game-container">
     <div class="data-container">
       <h3 v-if="gameID !== ''">Game ID: {{ gameID }}</h3>
-      <input :disabled="phoneField" type="number" placeholder="Enter your phone number: " v-model="userID" />
+      <input :disabled="phoneField" type="number" placeholder="Your phone number: " v-model="userID" />
       <button type="button" @click="handleConnection" :disabled="!userID || userID === ''">{{ connectionTitle }}</button>
     </div>
     <canvas 
@@ -60,6 +60,11 @@ export default {
         this.phoneField = false;
         this.socket.close();
       } else {
+        if (this.userID.length !== 10) {
+          alert('You must enter a valid 10 digit phone number!');
+          return;
+        }
+
         const url = `${process.env.VUE_APP_WS_URL}/${this.formatUserID()}`;
         this.connectionTitle = 'Disconnect!';
         this.socket = new WebSocket(url);
