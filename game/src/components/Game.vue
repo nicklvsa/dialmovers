@@ -51,7 +51,7 @@ export default {
   },
   methods: {
     handleConnection() {
-      if (this.socket && this.connectionTitle === 'Disconnect!') {
+      if (this.socket.readyState !== WebSocket.CLOSED && this.connectionTitle === 'Disconnect!') {
         this.connectionTitle = 'Connect!';
         this.phoneField = false;
         this.socket.close();
