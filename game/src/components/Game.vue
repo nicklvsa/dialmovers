@@ -25,6 +25,7 @@
             <h5 class="event-log" :style="{'background-color': event.color}">[{{ event.type }}]: {{ event.message }}</h5>
           </div>
         </div>
+        <button @click="clearEventHistory" class="help-btn">Clear History</button>
       </div>
     </div> 
     <h4>Red Square = Enemy</h4>
@@ -68,6 +69,9 @@ export default {
   methods: {
     showHelp() {
       alert('To connect your phone, dial into this number: +1(484)255-3747.\nWhen entering your phone number into the text box above, do NOT include the "+1,(),-" characters!\n\nNOTE: This game is still under development!');
+    },
+    clearEventHistory() {
+      this.events = [];
     },
     handleConnection() {
       if (this.socket.readyState !== WebSocket.CLOSED && this.connectionTitle === 'Disconnect!') {
