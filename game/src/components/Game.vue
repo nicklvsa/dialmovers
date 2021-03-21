@@ -1,7 +1,7 @@
 <template>
   <div class="game-container">
+    <h3 class="game-id-text" v-if="gameID !== ''">Game ID: {{ gameID }}</h3>
     <div class="data-container">
-      <h3 v-if="gameID !== ''">Game ID: {{ gameID }}</h3>
       <input :disabled="phoneField" type="number" placeholder="Your phone number: " v-model="userID" />
       <button type="button" @click="handleConnection" :disabled="!userID || userID === ''">{{ connectionTitle }}</button>
       <p>
@@ -308,5 +308,9 @@ export default {
 
   .help-btn {
     font-size: 12px;
+  }
+
+  .game-id-text {
+    text-align: center;
   }
 </style>
