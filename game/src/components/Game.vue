@@ -235,10 +235,15 @@ export default {
   }
 
   .game-container {
+    display: flex;
+    flex-direction: column;
     text-align: center;
   }
 
   .data-container {
+    display: flex;
+    align-items: center;
+    text-align: center;
     margin-bottom: 20px;
   }
 
