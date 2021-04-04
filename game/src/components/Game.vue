@@ -137,7 +137,6 @@ export default {
                     x: 100,
                     y: 100,
                     user_id: response.payload.user_id,
-                    you: true,
                     updatePos: (newX, newY) => {
                       this.context.fillStyle = "#009933";
                       this.context.fillRect(newX, newY, 20, 20);
@@ -165,7 +164,6 @@ export default {
                     x: 100,
                     y: 100,
                     user_id: response.payload.user_id,
-                    you: false,
                     updatePos: (newX, newY) => {
                       this.context.fillStyle = "#FF0000";
                       this.context.fillRect(newX, newY, 20, 20);
