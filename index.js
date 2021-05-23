@@ -7,19 +7,6 @@ const { handleEvents, mappedUsers, joinGame, movePlayer } = require('./socket');
 const port = 8080;
 const app = express();
 
-app.get('/message', (req, res) => {
-    const twiml = new MessagingResponse();
-
-    const msg = twiml.message();
-    msg.body('I just shit my pants');
-    msg.media('https://i.imgflip.com/d47wa.jpg');
-
-    res.writeHead(200, {
-        'Content-Type': 'text/xml',
-    });
-    res.end(twiml.toString());
-});
-
 app.get('/voice', async (req, res) => {
     const twiml = new VoiceResponse();
 
