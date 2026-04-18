@@ -3,6 +3,10 @@ import VoiceResponse from 'twilio/lib/twiml/VoiceResponse';
 import { logger } from '../middleware/error-handler';
 import { config } from '../config';
 
+// Extract the language type from VoiceResponse SayAttributes
+type SayAttributes = Parameters<typeof VoiceResponse.prototype.say>[0];
+type SayLanguage = SayAttributes extends { language?: infer L } ? L : string;
+
 /**
  * Twilio Service for handling voice responses and SDK interactions
  */
@@ -58,7 +62,7 @@ export class TwilioService {
 
     twiml.say({
       voice: options?.voice || 'alice',
-      language: (options?.language || 'en-US') as any,
+      language: (options?.language || 'en-US') as SayLanguage,
       loop: options?.loop,
     }, text);
 
@@ -126,6 +130,7 @@ export class TwilioService {
     method?: 'GET' | 'POST';
     fallbackUrl?: string;
     statusCallback?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }): Promise<any> {
     if (!this.client) {
       throw new Error('Twilio client not initialized. Please provide TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN.');
@@ -153,6 +158,7 @@ export class TwilioService {
   /**
    * Get call information
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getCallInfo(callSid: string): Promise<any> {
     if (!this.client) {
       throw new Error('Twilio client not initialized. Please provide TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN.');

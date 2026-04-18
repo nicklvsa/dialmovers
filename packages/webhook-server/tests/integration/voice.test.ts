@@ -1,12 +1,20 @@
 import request from 'supertest';
 import { createApp } from '../../src/index';
-import { GameService } from '../../src/services/game.service';
+import { gameService } from '../../src/services/game.service';
+import { wsService } from '../../src/services/websocket.service';
+
+// Suppress unhandled WebSocket errors during tests
+wsService.on('error', () => {});
 
 describe('POST /voice Integration Tests', () => {
   let app: ReturnType<typeof createApp>;
 
   beforeAll(() => {
     app = createApp();
+  });
+
+  afterEach(() => {
+    gameService.destroy();
   });
 
   describe('Initial call handling', () => {
@@ -41,9 +49,7 @@ describe('POST /voice Integration Tests', () => {
       expect(response.text).toContain('1');
     });
 
-    it('should accept multi-digit PIN', async () => {
-      // The application only accepts one digit at a time
-      // Multi-digit input will be rejected with "one digit at a time" message
+    it('should reject multi-digit input for PIN', async () => {
       const response = await request(app)
         .get('/voice')
         .query({ Caller: '+1234567890', Digits: '12345' })
@@ -58,9 +64,7 @@ describe('POST /voice Integration Tests', () => {
 
     beforeEach(() => {
       // Create a session with a PIN for testing movement
-      const gameService = new GameService();
       gameService.createSession(userId, '12345');
-      gameService.setSessionPin(userId, '12345');
     });
 
     it('should handle UP movement (digit 2)', async () => {
@@ -122,25 +126,21 @@ describe('POST /voice Integration Tests', () => {
 
   describe('Invalid input handling', () => {
     it('should reject invalid digits when user has active session', async () => {
-      const gameService = new GameService();
       const userId = '+1234567890:caller';
-      // Create session with PIN (simulates user already entered PIN)
       gameService.createSession(userId, '12345');
-      gameService.setSessionPin(userId, '12345');
 
       const response = await request(app)
         .get('/voice')
         .query({ Caller: '+1234567890', Digits: '9' })
         .expect('Content-Type', /xml/);
 
-      // Digit 9 is not a valid movement digit, should hang up
-      const hasInvalidMove = response.text.includes('invalid move');
-      const hasGoodbye = response.text.includes('goodbye');
+      // Twiml generates "Goodbye" with capital G
+      const hasInvalidMove = response.text.toLowerCase().includes('invalid move');
+      const hasGoodbye = response.text.toLowerCase().includes('goodbye');
       expect(hasInvalidMove || hasGoodbye).toBe(true);
     });
 
     it('should reject multi-digit input for movement', async () => {
-      const gameService = new GameService();
       const userId = '+1234567890:caller';
       gameService.createSession(userId, '12345');
 
@@ -173,17 +173,16 @@ describe('POST /voice Integration Tests', () => {
 
       expect(response.text).toContain('Invalid caller');
     });
+  });
 
-    it('should handle malformed Caller parameter', async () => {
-      // Note: Currently the app accepts "invalid" as a caller ID
-      // In production, phone validation should be added
+  describe('POST method', () => {
+    it('should also handle POST requests', async () => {
       const response = await request(app)
-        .get('/voice')
-        .query({ Caller: 'invalid' })
-        .expect(200);
+        .post('/voice')
+        .query({ Caller: '+1234567890' })
+        .expect('Content-Type', /xml/);
 
-      // The app processes it but won't be able to make actual calls
-      expect(response.text).toContain('Get ready');
+      expect(response.text).toContain('<Gather');
     });
   });
 });

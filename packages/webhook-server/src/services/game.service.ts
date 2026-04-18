@@ -1,3 +1,4 @@
+import WebSocket from 'ws';
 import { logger } from '../middleware/error-handler';
 import { config } from '../config';
 import { DirectionSchema } from '../middleware/validator';
@@ -10,7 +11,7 @@ export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export interface UserSession {
   userId: string;
   pin: string | null;
-  connection: any; // WebSocket connection
+  connection: WebSocket | null;
   createdAt: Date;
   lastActivity: Date;
 }
@@ -77,7 +78,7 @@ export class GameService {
   /**
    * Set WebSocket connection for a session
    */
-  setSessionConnection(userId: string, connection: any): void {
+  setSessionConnection(userId: string, connection: WebSocket): void {
     const session = this.sessions.get(userId);
     if (session) {
       session.connection = connection;
@@ -202,19 +203,29 @@ export class GameService {
    */
   private cleanupExpiredSessions(): void {
     const now = Date.now();
-    let cleanedCount = 0;
+    const expired: string[] = [];
 
     for (const [userId, session] of this.sessions.entries()) {
       const sessionAge = now - session.lastActivity.getTime();
       if (sessionAge > this.sessionTimeout) {
-        this.sessions.delete(userId);
-        cleanedCount++;
+        expired.push(userId);
       }
     }
 
-    if (cleanedCount > 0) {
-      logger.info({ count: cleanedCount }, 'Cleaned up expired sessions');
+    for (const userId of expired) {
+      this.sessions.delete(userId);
     }
+
+    if (expired.length > 0) {
+      logger.info({ count: expired.length }, 'Cleaned up expired sessions');
+    }
+  }
+
+  /**
+   * Get all sessions
+   */
+  getAllSessions(): UserSession[] {
+    return Array.from(this.sessions.values());
   }
 
   /**

@@ -6,7 +6,7 @@ export type PayloadType = 'connect' | 'disconnect' | 'game:join' | 'game:move';
 
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 
-export interface BaseEvent<T = any> {
+export interface BaseEvent<T = ConnectionPayload | JoinPayload | MovePayload> {
   payload_type: PayloadType;
   payload: T;
 }

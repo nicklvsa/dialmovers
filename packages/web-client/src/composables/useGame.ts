@@ -1,5 +1,5 @@
 import { ref, reactive, watch, Ref } from 'vue';
-import { PlayerPosition, GameEvent, Direction, SocketEvent } from '@/types/events';
+import { PlayerPosition, GameEvent, Direction, SocketEvent, MovePayload } from '@/types/events';
 
 const GAME_SPEED = 20;
 const STARTING_X = 100;
@@ -47,18 +47,24 @@ export function useGame(canvasRef: Ref<HTMLCanvasElement | undefined>) {
     const pos = positions.get(userId);
     if (!pos) return;
 
+    const canvas = canvasRef.value;
+    if (!canvas) return;
+
+    const maxX = canvas.width - SQUARE_SIZE;
+    const maxY = canvas.height - SQUARE_SIZE;
+
     switch (direction) {
       case 'UP':
-        pos.y -= GAME_SPEED;
+        pos.y = Math.max(0, pos.y - GAME_SPEED);
         break;
       case 'DOWN':
-        pos.y += GAME_SPEED;
+        pos.y = Math.min(maxY, pos.y + GAME_SPEED);
         break;
       case 'LEFT':
-        pos.x -= GAME_SPEED;
+        pos.x = Math.max(0, pos.x - GAME_SPEED);
         break;
       case 'RIGHT':
-        pos.x += GAME_SPEED;
+        pos.x = Math.min(maxX, pos.x + GAME_SPEED);
         break;
     }
     render();
@@ -103,9 +109,8 @@ export function useGame(canvasRef: Ref<HTMLCanvasElement | undefined>) {
         break;
 
       case 'game:move':
-        const payload = event.payload as any;
-        addEvent('Move', 'blue', `User ${payload.user_id} moved ${payload.direction}`);
-        movePlayer(payload.user_id, payload.direction);
+        addEvent('Move', 'blue', `User ${event.payload.user_id} moved ${(event.payload as MovePayload).direction}`);
+        movePlayer(event.payload.user_id, (event.payload as MovePayload).direction);
         break;
     }
   };

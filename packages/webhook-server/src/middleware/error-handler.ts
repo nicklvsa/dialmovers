@@ -10,7 +10,7 @@ const logger = pino({
 });
 
 export class ValidationError extends Error {
-  constructor(public errors: any[]) {
+  constructor(public errors: { path: (string | number)[]; message: string }[]) {
     super('Validation failed');
     this.name = 'ValidationError';
   }

@@ -53,6 +53,12 @@ export class WebSocketClient {
             this.reconnectTimeout = setTimeout(() => {
               this.connect().catch(console.error);
             }, delay);
+          } else {
+            console.warn('[WebSocket] Max reconnection attempts reached');
+            this.notifyListeners({
+              payload_type: 'disconnect',
+              payload: { user_id: this.userId },
+            });
           }
         };
 

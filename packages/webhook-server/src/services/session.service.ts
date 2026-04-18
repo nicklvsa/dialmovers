@@ -113,10 +113,7 @@ export class SessionService {
    * Get all active sessions
    */
   getActiveSessions(): UserSession[] {
-    // We can't directly get all sessions from gameService
-    // This is a limitation of the current design
-    // For now, return empty array
-    return [];
+    return gameService.getAllSessions();
   }
 
   /**

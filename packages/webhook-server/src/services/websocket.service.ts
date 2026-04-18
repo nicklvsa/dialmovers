@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
+import http from 'http';
 import { logger } from '../middleware/error-handler';
 import { config } from '../config';
 
@@ -122,26 +123,22 @@ export class WebSocketService extends EventEmitter {
   }
 
   /**
-   * Check if the game server is connected
+   * Check if the game server is reachable via HTTP health endpoint
    */
   async isConnected(): Promise<boolean> {
-    // Try to connect to the game server health endpoint
     return new Promise((resolve) => {
-      const testSocket = new WebSocket(`${config.gameServer.url.replace('ws', 'http')}/health`);
+      const url = new URL('/health', config.gameServer.url.replace(/^ws/, 'http'));
 
-      testSocket.on('open', () => {
-        testSocket.close();
-        resolve(true);
+      const req = http.get(url, { timeout: 3000 }, (res) => {
+        resolve(res.statusCode === 200);
+        res.resume(); // drain response
       });
 
-      testSocket.on('error', () => {
+      req.on('error', () => resolve(false));
+      req.on('timeout', () => {
+        req.destroy();
         resolve(false);
       });
-
-      setTimeout(() => {
-        testSocket.close();
-        resolve(false);
-      }, 3000);
     });
   }
 

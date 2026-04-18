@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import { useGame } from '@/composables/useGame';
 
 describe('useGame', () => {
-  let canvasRef: ref<HTMLCanvasElement | undefined>;
+  let canvasRef: ReturnType<typeof ref<HTMLCanvasElement | undefined>>;
   let mockCanvas: HTMLCanvasElement;
   let mockContext: CanvasRenderingContext2D;
 
@@ -22,11 +22,13 @@ describe('useGame', () => {
 
     mockCanvas.getContext = vi.fn(() => mockContext);
 
-    canvasRef = ref(mockCanvas);
+    // Start with undefined, will be set per-test as needed
+    canvasRef = ref<HTMLCanvasElement | undefined>(undefined);
   });
 
   describe('addPosition', () => {
     it('should add a player position', () => {
+      canvasRef.value = mockCanvas;
       const { addPosition, positions } = useGame(canvasRef);
 
       addPosition('user1', true);
@@ -37,6 +39,7 @@ describe('useGame', () => {
     });
 
     it('should set correct color for caller', () => {
+      canvasRef.value = mockCanvas;
       const { addPosition, positions } = useGame(canvasRef);
 
       addPosition('user1', true);
@@ -45,6 +48,7 @@ describe('useGame', () => {
     });
 
     it('should set correct color for non-caller', () => {
+      canvasRef.value = mockCanvas;
       const { addPosition, positions } = useGame(canvasRef);
 
       addPosition('user1', false);
@@ -54,8 +58,10 @@ describe('useGame', () => {
   });
 
   describe('movePlayer', () => {
-    it('should move player UP', () => {
+    it('should move player UP', async () => {
+      canvasRef.value = mockCanvas;
       const { addPosition, movePlayer, positions } = useGame(canvasRef);
+      await nextTick();
 
       addPosition('user1', true);
       movePlayer('user1', 'UP');
@@ -63,8 +69,10 @@ describe('useGame', () => {
       expect(positions.get('user1')?.y).toBe(80); // 100 - 20
     });
 
-    it('should move player DOWN', () => {
+    it('should move player DOWN', async () => {
+      canvasRef.value = mockCanvas;
       const { addPosition, movePlayer, positions } = useGame(canvasRef);
+      await nextTick();
 
       addPosition('user1', true);
       movePlayer('user1', 'DOWN');
@@ -72,8 +80,10 @@ describe('useGame', () => {
       expect(positions.get('user1')?.y).toBe(120); // 100 + 20
     });
 
-    it('should move player LEFT', () => {
+    it('should move player LEFT', async () => {
+      canvasRef.value = mockCanvas;
       const { addPosition, movePlayer, positions } = useGame(canvasRef);
+      await nextTick();
 
       addPosition('user1', true);
       movePlayer('user1', 'LEFT');
@@ -81,8 +91,10 @@ describe('useGame', () => {
       expect(positions.get('user1')?.x).toBe(80); // 100 - 20
     });
 
-    it('should move player RIGHT', () => {
+    it('should move player RIGHT', async () => {
+      canvasRef.value = mockCanvas;
       const { addPosition, movePlayer, positions } = useGame(canvasRef);
+      await nextTick();
 
       addPosition('user1', true);
       movePlayer('user1', 'RIGHT');
@@ -90,8 +102,45 @@ describe('useGame', () => {
       expect(positions.get('user1')?.x).toBe(120); // 100 + 20
     });
 
-    it('should not crash when moving non-existent player', () => {
+    it('should clamp position to canvas bounds', async () => {
+      canvasRef.value = mockCanvas;
+      const { addPosition, movePlayer, positions } = useGame(canvasRef);
+      await nextTick();
+
+      addPosition('user1', true);
+      // Move player to near top-left and try to go beyond
+      const pos = positions.get('user1')!;
+      pos.x = 5;
+      pos.y = 5;
+
+      movePlayer('user1', 'UP');
+      expect(positions.get('user1')?.y).toBe(0);
+
+      movePlayer('user1', 'LEFT');
+      expect(positions.get('user1')?.x).toBe(0);
+    });
+
+    it('should clamp position to canvas right/bottom bounds', async () => {
+      canvasRef.value = mockCanvas;
+      const { addPosition, movePlayer, positions } = useGame(canvasRef);
+      await nextTick();
+
+      addPosition('user1', true);
+      const pos = positions.get('user1')!;
+      pos.x = 790;
+      pos.y = 590;
+
+      movePlayer('user1', 'RIGHT');
+      expect(positions.get('user1')?.x).toBe(780); // 800 - 20
+
+      movePlayer('user1', 'DOWN');
+      expect(positions.get('user1')?.y).toBe(580); // 600 - 20
+    });
+
+    it('should not crash when moving non-existent player', async () => {
+      canvasRef.value = mockCanvas;
       const { movePlayer, positions } = useGame(canvasRef);
+      await nextTick();
 
       movePlayer('nonexistent', 'UP');
 
@@ -101,6 +150,7 @@ describe('useGame', () => {
 
   describe('removePosition', () => {
     it('should remove a player position', () => {
+      canvasRef.value = mockCanvas;
       const { addPosition, removePosition, positions } = useGame(canvasRef);
 
       addPosition('user1', true);
@@ -142,8 +192,10 @@ describe('useGame', () => {
   });
 
   describe('render', () => {
-    it('should call clearRect and fillRect when rendering', () => {
+    it('should call clearRect and fillRect when rendering', async () => {
       const { addPosition, render } = useGame(canvasRef);
+      canvasRef.value = mockCanvas;
+      await nextTick();
 
       addPosition('user1', true);
       render();

@@ -11,7 +11,7 @@
     <button
       type="button"
       @click="handleConnect"
-      :disabled="!isValidPhone || !gameID"
+      :disabled="!isValidPhone || isConnected"
       class="connect-button"
     >
       {{ isConnected ? 'Disconnect!' : 'Connect!' }}
