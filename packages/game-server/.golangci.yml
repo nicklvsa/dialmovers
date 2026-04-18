@@ -1,0 +1,24 @@
+linters:
+  enable:
+    - gofmt
+    - goimports
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - ineffassign
+    - deadcode
+    - varcheck
+    - structcheck
+    - misspell
+
+linters-settings:
+  govet:
+    check-shadowing: true
+  errcheck:
+    check-blank: true
+
+run:
+  timeout: 5m
+  go: '1.22'

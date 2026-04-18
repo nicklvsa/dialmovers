@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'dialmovers-monitor'
+
+scrape_configs:
+  - job_name: 'webhook-server'
+    static_configs:
+      - targets: ['webhook-server:8080']
+    metrics_path: '/metrics'
+
+  - job_name: 'game-server'
+    static_configs:
+      - targets: ['game-server:8081']
+    metrics_path: '/metrics'
+
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']
